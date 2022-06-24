@@ -1,0 +1,10 @@
+name: Communed
+version: '${project.version}'
+main: fucking.fuck.communed.Communed
+api-version: 1.19
+
+
+# commands
+commands:
+  com:
+    description: "This is the Communed command"
