@@ -21,12 +21,6 @@ public class PlayerListener implements Listener {
             return;
         }
 
-
-        String name = player.getName();
-        if(false){
-            System.out.println("Player " + name + " couldn't be added to the database");
-            return;
-        }
-        System.out.println("Player " + name + " was added to the database");
+        PlayerDB.addCommune(player, "");
     }
 }

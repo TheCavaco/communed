@@ -4,18 +4,17 @@ import fucking.fuck.communed.exceptions.CannotInviteMemberException;
 import fucking.fuck.communed.exceptions.CannotRemoveLeaderException;
 import fucking.fuck.communed.exceptions.CannotRemoveNonMemberException;
 import fucking.fuck.communed.exceptions.NotAllowedException;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -86,7 +85,13 @@ public class Commune implements Serializable {
 
 
     public boolean saveData(String filePath) {
-        // filepath format : Commune_facName.data
+        // filepath format : Commune_facName.dat
+        File dir = new File("./plugins/PluginMetrics/communes/" + filePath);
+        if(!dir.exists() && dir.mkdir()){
+            filePath = "./plugins/PluginMetrics/communes/" + filePath + "/" + filePath + ".data";
+        } else {
+            return false;
+        }
         try {
             BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(new FileOutputStream(filePath)));
             out.writeObject(this);
@@ -101,7 +106,7 @@ public class Commune implements Serializable {
 
     public static Commune loadCommune(String filePath){
         // filepath format : Commune_facName.data
-
+        filePath = "./plugins/PluginMetrics/communes/" + filePath + "/" + filePath + ".data";
         try {
             BukkitObjectInputStream in = new BukkitObjectInputStream(new GZIPInputStream(new FileInputStream(filePath)));
             Commune com = (Commune) in.readObject();
@@ -111,6 +116,15 @@ public class Commune implements Serializable {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static boolean createFile(String path){
+        File file = new File(path);
+        return !file.exists() && file.mkdirs();
+    }
+
+    public String getName(){
+        return this.name;
     }
 
 

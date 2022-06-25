@@ -9,8 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-
+import org.bukkit.persistence.PersistentDataContainer;
 
 
 public class CommuneCommand implements CommandExecutor {
@@ -21,7 +20,7 @@ public class CommuneCommand implements CommandExecutor {
 
 
         if (!(sender instanceof Player)){
-            // faction creation could be done by anyone
+            // for debugging purposes
             if(args.length == 2){
                 switch (args[0]){
                     case "deletecom":
@@ -61,6 +60,25 @@ public class CommuneCommand implements CommandExecutor {
             case "i":
                 showCommune(player);
                 break;
+            case "inv":
+                ChatHelp.sendHelp(player, "You need to specify a player name to invite\nUse /com inv <playername>");
+                break;
+            case "accept":
+                PersistentDataContainer data = player.getPersistentDataContainer();
+                if (PlayerDB.isInvited(data)){
+                    PlayerDB.setInvited(data, "ac");
+                } else {
+                    ChatHelp.sendBadMessage(player, "You have no pending invites.");
+                }
+                break;
+            case "deny":
+                PersistentDataContainer data_deny = player.getPersistentDataContainer();
+                if (PlayerDB.isInvited(data_deny)){
+                    PlayerDB.setInvited(data_deny, "de");
+                } else {
+                    ChatHelp.sendBadMessage(player, "You have no pending invites.");
+                }
+                break;
         }
     }
 
@@ -79,6 +97,8 @@ public class CommuneCommand implements CommandExecutor {
             readyToCreateCommune(player, facName, desc);
         } else if ("i".equals(args[0])) {
             showCommune(player, args[1]);
+        } else if ("inv".equals(args[0])) {
+
         } else {
             ChatHelp.sendBadMessage(player, "Command /com " + args[0] + " is not valid.");
         }
@@ -96,7 +116,7 @@ public class CommuneCommand implements CommandExecutor {
             return;
         }
 
-        Commune commune = Commune.loadCommune("Commune_" + name + ".data");
+        Commune commune = Commune.loadCommune(name);
         if (commune == null){
             ChatHelp.sendBadMessage(player, "Couldn't find Commune named " + name);
             return;
@@ -105,7 +125,7 @@ public class CommuneCommand implements CommandExecutor {
     }
 
     private void showCommune(Player player, String name){
-        Commune commune = Commune.loadCommune("Commune_" + name + ".data");
+        Commune commune = Commune.loadCommune(name);
         if (commune == null){
             ChatHelp.sendBadMessage(player, "Couldn't find Commune named " + name);
             return;
@@ -130,7 +150,7 @@ public class CommuneCommand implements CommandExecutor {
             ChatHelp.sendBadMessage(player, "You are already in a Commune.");
             return;
         }
-        if (commune.saveData("Commune_" + facName + ".data")) {
+        if (commune.saveData(facName)) {
             // Save in player the faction
             PlayerDB.addCommune(player, facName);
             ChatHelp.sendSuccess(player, "Commune " + facName + " created!");
