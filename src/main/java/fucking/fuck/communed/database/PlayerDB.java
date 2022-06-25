@@ -2,6 +2,7 @@ package fucking.fuck.communed.database;
 
 
 import fucking.fuck.communed.Communed;
+import fucking.fuck.communed.gameobjects.Commune;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -78,6 +79,15 @@ public class PlayerDB {
         } else {
             return true;
         }
+    }
+
+    public static boolean isCommuneLeader(Player player){
+        PersistentDataContainer data = player.getPersistentDataContainer();
+        String communename = data.get(new NamespacedKey(Communed.getPluginInstance(), "commune"), PersistentDataType.STRING);
+
+        Commune commune = Commune.loadCommune(communename);
+
+        return commune.getFounder().equals(player.getUniqueId());
     }
 
 

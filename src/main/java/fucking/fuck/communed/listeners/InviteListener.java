@@ -17,12 +17,14 @@ public class InviteListener implements Listener {
         Player player = Bukkit.getPlayer(event.getPlayerName());
         Player inviter = Bukkit.getPlayer(event.getInviterName());
         Commune commune = Commune.loadCommune(event.getCommuneName());
-        PersistentDataContainer data = player.getPersistentDataContainer();
+
 
         if(player == null){
-            ChatHelp.sendBadMessage(inviter, "Player " + player.getName() + " is not available for invites.");
+            ChatHelp.sendBadMessage(inviter, "Player " + event.getPlayerName() + " is not available for invites.");
             return;
         }
+
+        PersistentDataContainer data = player.getPersistentDataContainer();
 
         // player has Commune
         if(PlayerDB.hasCommune(data)){
@@ -52,6 +54,7 @@ public class InviteListener implements Listener {
                 //player gets in the commune
                 commune.addPlayer(player);
                 PlayerDB.addCommune(player, commune.getName());
+                commune.saveData(commune.getName());
                 ChatHelp.sendSuccess(player, "You are now a member of " + commune.getName() + ".");
                 break;
 

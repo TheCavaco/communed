@@ -2,6 +2,7 @@ package fucking.fuck.communed.commands;
 
 
 import fucking.fuck.communed.database.PlayerDB;
+import fucking.fuck.communed.events.OnPlayerInvitedEvent;
 import fucking.fuck.communed.gameobjects.Commune;
 import fucking.fuck.communed.helpers.ChatHelp;
 import org.bukkit.Bukkit;
@@ -61,6 +62,7 @@ public class CommuneCommand implements CommandExecutor {
                 showCommune(player);
                 break;
             case "inv":
+                //check permissions
                 ChatHelp.sendHelp(player, "You need to specify a player name to invite\nUse /com inv <playername>");
                 break;
             case "accept":
@@ -79,6 +81,19 @@ public class CommuneCommand implements CommandExecutor {
                     ChatHelp.sendBadMessage(player, "You have no pending invites.");
                 }
                 break;
+            case "delete":
+                //check permissions
+                if(!PlayerDB.isCommuneLeader(player)){
+                    ChatHelp.sendNoPermissionMessage(player);
+                } else {
+                    String commune = PlayerDB.getCommune(player);
+                    if(!(Commune.deleteCommune(commune) && PlayerDB.removeCommune(player))){
+                        ChatHelp.sendBadMessage(player, "Error occurred while running the command.");
+                    } else {
+                        ChatHelp.sendSuccess(player, "Commune deleted.");
+                    }
+                }
+                break;
         }
     }
 
@@ -87,8 +102,8 @@ public class CommuneCommand implements CommandExecutor {
         if ("c".equals(args[0])) {
             String facName = args[1];
             String desc = "";
-            if(length == 3){
-                desc = args[2];
+            if(length > 3){
+                desc = setUpDescription(2, args);
             }
             if(!isValidName(facName)){
                 ChatHelp.sendBadMessage(player, "Commune " + facName + " was not created.\nName must be between 3-20 characters & Special characters are not allowed.");
@@ -98,7 +113,8 @@ public class CommuneCommand implements CommandExecutor {
         } else if ("i".equals(args[0])) {
             showCommune(player, args[1]);
         } else if ("inv".equals(args[0])) {
-
+            //check permissions
+            invite(player, args);
         } else {
             ChatHelp.sendBadMessage(player, "Command /com " + args[0] + " is not valid.");
         }
@@ -106,6 +122,21 @@ public class CommuneCommand implements CommandExecutor {
 
 
 
+    private void invite(Player inviter, String[] args){
+        int length = args.length;
+
+        if(length != 2){
+            ChatHelp.sendBadMessage(inviter, "Can only invite one player at a time.");
+            return;
+        }
+
+        String communename = PlayerDB.getCommune(inviter);
+
+        String playername = args[1];
+
+        Bukkit.getPluginManager().callEvent(new OnPlayerInvitedEvent(playername, communename, inviter.getName()));
+
+    }
 
 
     private void showCommune(Player player){
@@ -157,6 +188,16 @@ public class CommuneCommand implements CommandExecutor {
         } else {
             ChatHelp.sendBadMessage(player, "Commune " + facName + " was not created.\nUnknown Error.");
         }
+    }
+
+    private String setUpDescription(int num, String[] args){
+        StringBuffer buffer = new StringBuffer();
+
+        for(int i = num; i < args.length; i++){
+            buffer.append(args[i]);
+        }
+
+        return buffer.toString();
     }
 
 

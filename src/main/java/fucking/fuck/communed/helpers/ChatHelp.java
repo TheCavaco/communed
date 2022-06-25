@@ -19,4 +19,6 @@ public class ChatHelp {
 
     public static void sendMessage(Player player , String text) { player.sendMessage(text); }
 
+    public static void sendNoPermissionMessage(Player player) { sendBadMessage(player, "You do not have permission to use this command."); }
+
 }

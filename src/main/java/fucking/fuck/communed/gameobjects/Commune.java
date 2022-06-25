@@ -6,6 +6,8 @@ import fucking.fuck.communed.exceptions.CannotRemoveNonMemberException;
 import fucking.fuck.communed.exceptions.NotAllowedException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -83,15 +85,43 @@ public class Commune implements Serializable {
         }
     }
 
+    public boolean delete(){
+        return deleteCommune(this.getName());
+    }
+
+
+    public static boolean deleteCommune(String filePath){
+        File dir = new File("./plugins/PluginMetrics/communes/" + filePath);
+        if(!dir.exists()){
+            Bukkit.broadcastMessage("First if case");
+            return false;
+        }
+
+        for(File file: dir.listFiles()){
+            if(!file.delete()){
+                Bukkit.broadcastMessage("Second if case");
+                return false;
+            }
+        }
+
+        if(dir.delete()){
+            return true;
+        } else {
+            Bukkit.broadcastMessage("Third if case");
+            return false;
+        }
+    }
+
 
     public boolean saveData(String filePath) {
         // filepath format : Commune_facName.dat
         File dir = new File("./plugins/PluginMetrics/communes/" + filePath);
-        if(!dir.exists() && dir.mkdir()){
-            filePath = "./plugins/PluginMetrics/communes/" + filePath + "/" + filePath + ".data";
-        } else {
-            return false;
+
+        if(!dir.exists()){
+            dir.mkdir();
         }
+        filePath = "./plugins/PluginMetrics/communes/" + filePath + "/" + filePath + ".data";
+
         try {
             BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(new FileOutputStream(filePath)));
             out.writeObject(this);
@@ -110,6 +140,7 @@ public class Commune implements Serializable {
         try {
             BukkitObjectInputStream in = new BukkitObjectInputStream(new GZIPInputStream(new FileInputStream(filePath)));
             Commune com = (Commune) in.readObject();
+            in.close();
             return com;
         } catch (ClassNotFoundException | IOException e) {
             System.out.println("Error retrieving the Commune");
@@ -127,10 +158,17 @@ public class Commune implements Serializable {
         return this.name;
     }
 
+    public UUID getFounder(){
+        return this.founder;
+    }
+
 
     public String toString(){
-        String info = ChatColor.YELLOW + "Faction name:" + ChatColor.GREEN + this.name + "\n" +
-                ChatColor.YELLOW + "Description: " + ChatColor.GREEN + this.description;
-        return info;
+        String separator = "==================================================\n";
+        String info = ChatColor.YELLOW + "Faction name: " + ChatColor.GREEN + this.name + "\n" +
+                ChatColor.YELLOW + "Description: " + ChatColor.GREEN + this.description + "\n" +
+                ChatColor.YELLOW + "Founder" + ChatColor.GREEN + Bukkit.getOfflinePlayer(founder).getName();
+
+        return separator + info + separator;
     }
 }
