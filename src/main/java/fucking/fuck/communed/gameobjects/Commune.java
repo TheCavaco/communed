@@ -85,21 +85,34 @@ public class Commune implements Serializable {
         }
     }
 
+
+
     public boolean delete(){
-        return deleteCommune(this.getName());
+        return deleteCommune(this.id);
     }
 
+    public static Commune getCommuneByName(String name){
+        File dir = new File("./plugins/PluginMetrics/communes");
 
-    public static boolean deleteCommune(String filePath){
+        for(File file: dir.listFiles()){
+            String uid = file.getName().split(".")[0];
+            Commune commune = loadCommune(UUID.fromString(uid));
+            if(commune.getName().equals(name)){
+                return commune;
+            }
+        }
+        return null;
+    }
+
+    public static boolean deleteCommune(UUID idOfCommune){
+        String filePath = idOfCommune.toString();
         File dir = new File("./plugins/PluginMetrics/communes/" + filePath);
         if(!dir.exists()){
-            Bukkit.broadcastMessage("First if case");
             return false;
         }
 
         for(File file: dir.listFiles()){
             if(!file.delete()){
-                Bukkit.broadcastMessage("Second if case");
                 return false;
             }
         }
@@ -107,13 +120,13 @@ public class Commune implements Serializable {
         if(dir.delete()){
             return true;
         } else {
-            Bukkit.broadcastMessage("Third if case");
             return false;
         }
     }
 
 
-    public boolean saveData(String filePath) {
+    public boolean saveData() {
+        String filePath = id.toString();
         // filepath format : Commune_facName.dat
         File dir = new File("./plugins/PluginMetrics/communes/" + filePath);
 
@@ -134,7 +147,8 @@ public class Commune implements Serializable {
         }
     }
 
-    public static Commune loadCommune(String filePath){
+    public static Commune loadCommune(UUID idOfCommune){
+        String filePath = idOfCommune.toString();
         // filepath format : Commune_facName.data
         filePath = "./plugins/PluginMetrics/communes/" + filePath + "/" + filePath + ".data";
         try {
@@ -149,9 +163,24 @@ public class Commune implements Serializable {
         }
     }
 
+    public static UUID getNullUUID(){
+        return UUID.fromString("17549af4-f5bc-11ec-b939-0242ac120002");
+    }
+
     public static boolean createFile(String path){
         File file = new File(path);
         return !file.exists() && file.mkdirs();
+    }
+
+    public void setDescription(String description){
+        this.description = description;
+    }
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public UUID getId(){
+        return this.id;
     }
 
     public String getName(){
@@ -167,7 +196,7 @@ public class Commune implements Serializable {
         String separator = "==================================================\n";
         String info = ChatColor.YELLOW + "Faction name: " + ChatColor.GREEN + this.name + "\n" +
                 ChatColor.YELLOW + "Description: " + ChatColor.GREEN + this.description + "\n" +
-                ChatColor.YELLOW + "Founder" + ChatColor.GREEN + Bukkit.getOfflinePlayer(founder).getName();
+                ChatColor.YELLOW + "Founder: " + ChatColor.GREEN + Bukkit.getOfflinePlayer(founder).getName() + "\n";
 
         return separator + info + separator;
     }

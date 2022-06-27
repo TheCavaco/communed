@@ -1,6 +1,8 @@
 package fucking.fuck.communed.listeners;
 
 import fucking.fuck.communed.database.PlayerDB;
+import fucking.fuck.communed.exceptions.CannotRemoveLeaderException;
+import fucking.fuck.communed.exceptions.CannotRemoveNonMemberException;
 import fucking.fuck.communed.gameobjects.Commune;
 import fucking.fuck.communed.helpers.ChatHelp;
 import org.bukkit.Bukkit;
@@ -13,9 +15,13 @@ import org.bukkit.persistence.PersistentDataContainer;
 public class InviteListener implements Listener {
 
     @EventHandler
-    public void onPlayerInvited(OnPlayerInvitedEvent event) throws InterruptedException {
+    public void onPlayerInvited(OnPlayerInvitedEvent event) throws InterruptedException, CannotRemoveLeaderException, CannotRemoveNonMemberException {
         Player player = Bukkit.getPlayer(event.getPlayerName());
         Player inviter = Bukkit.getPlayer(event.getInviterName());
+        if (event.getCommuneName().equals(Commune.getNullUUID())){
+            ChatHelp.sendBadMessage(inviter, "You are not in a commune.");
+            return;
+        }
         Commune commune = Commune.loadCommune(event.getCommuneName());
 
 
@@ -53,8 +59,13 @@ public class InviteListener implements Listener {
             if(result.equals("ac")){
                 //player gets in the commune
                 commune.addPlayer(player);
-                PlayerDB.addCommune(player, commune.getName());
-                commune.saveData(commune.getName());
+                PlayerDB.addCommune(player, commune.getId());
+                if(!commune.saveData()){
+                    ChatHelp.sendErrorMessage(player);
+                    PlayerDB.removeCommune(player);
+                    commune.removePlayer(player);
+                    break;
+                }
                 ChatHelp.sendSuccess(player, "You are now a member of " + commune.getName() + ".");
                 break;
 

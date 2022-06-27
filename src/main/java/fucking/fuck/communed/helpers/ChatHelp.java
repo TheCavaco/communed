@@ -21,4 +21,5 @@ public class ChatHelp {
 
     public static void sendNoPermissionMessage(Player player) { sendBadMessage(player, "You do not have permission to use this command."); }
 
+    public static void sendErrorMessage(Player player) { sendBadMessage(player, "Unknown error occurred."); }
 }

@@ -2,6 +2,7 @@ package fucking.fuck.communed.listeners;
 
 
 import fucking.fuck.communed.database.PlayerDB;
+import fucking.fuck.communed.gameobjects.Commune;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,10 +18,11 @@ public class PlayerListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
 
+
         if(player.hasPlayedBefore()){
             return;
         }
 
-        PlayerDB.addCommune(player, "");
+        PlayerDB.addCommune(player, Commune.getNullUUID());
     }
 }

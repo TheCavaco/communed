@@ -6,11 +6,14 @@ import fucking.fuck.communed.events.OnPlayerInvitedEvent;
 import fucking.fuck.communed.gameobjects.Commune;
 import fucking.fuck.communed.helpers.ChatHelp;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
+
+import java.util.UUID;
 
 
 public class CommuneCommand implements CommandExecutor {
@@ -86,7 +89,7 @@ public class CommuneCommand implements CommandExecutor {
                 if(!PlayerDB.isCommuneLeader(player)){
                     ChatHelp.sendNoPermissionMessage(player);
                 } else {
-                    String commune = PlayerDB.getCommune(player);
+                    UUID commune = PlayerDB.getCommune(player);
                     if(!(Commune.deleteCommune(commune) && PlayerDB.removeCommune(player))){
                         ChatHelp.sendBadMessage(player, "Error occurred while running the command.");
                     } else {
@@ -94,6 +97,16 @@ public class CommuneCommand implements CommandExecutor {
                     }
                 }
                 break;
+            case "set":
+                if(!PlayerDB.isCommuneLeader(player)){
+                    ChatHelp.sendNoPermissionMessage(player);
+                } else {
+                    ChatHelp.sendBadMessage(player, "Argument needed.\nSpecify what do you want to change.\n" +
+                            ChatColor.YELLOW + "/com set description <description>" + ChatColor.RED + "or" + ChatColor.YELLOW +
+                            "/com set name <name>");
+                }
+                break;
+
         }
     }
 
@@ -115,12 +128,39 @@ public class CommuneCommand implements CommandExecutor {
         } else if ("inv".equals(args[0])) {
             //check permissions
             invite(player, args);
+        } else if ("set".equals(args[0])) {
+            if(!PlayerDB.isCommuneLeader(player)){
+                ChatHelp.sendNoPermissionMessage(player);
+            } else if(args.length < 3){
+                ChatHelp.sendBadMessage(player, "Argument needed.\nSpecify what do you want to change.\n" +
+                        ChatColor.YELLOW + "/com set description <description>" + ChatColor.RED + "or" + ChatColor.YELLOW +
+                        "/com set name <name>");
+            } else {
+                setCommand(player, args);
+            }
         } else {
             ChatHelp.sendBadMessage(player, "Command /com " + args[0] + " is not valid.");
         }
     }
 
 
+    private void setCommand(Player player, String[] args){
+        Commune commune = Commune.loadCommune(PlayerDB.getCommune(player));
+        boolean validname = isValidName(args[2]);
+        if(args[1].equals("name") && validname){
+            commune.setName(args[2]);
+            commune.saveData();
+        } else if (args[1].equals("description")) {
+            commune.setDescription(setUpDescription(2, args));
+            commune.saveData();
+        } else if (!validname) {
+            ChatHelp.sendBadMessage(player, "Commune " + args[2] + " cannot have that name.\nName must be between 3-20 characters & Special characters are not allowed.");
+        } else {
+            ChatHelp.sendBadMessage(player, "Argument needed.\nSpecify what do you want to change.\n" +
+                    ChatColor.YELLOW + "/com set description <description>" + ChatColor.RED + "or" + ChatColor.YELLOW +
+                    "/com set name <name>");
+        }
+    }
 
     private void invite(Player inviter, String[] args){
         int length = args.length;
@@ -130,33 +170,33 @@ public class CommuneCommand implements CommandExecutor {
             return;
         }
 
-        String communename = PlayerDB.getCommune(inviter);
+        UUID communeid = PlayerDB.getCommune(inviter);
 
         String playername = args[1];
 
-        Bukkit.getPluginManager().callEvent(new OnPlayerInvitedEvent(playername, communename, inviter.getName()));
+        Bukkit.getPluginManager().callEvent(new OnPlayerInvitedEvent(playername, communeid, inviter.getName()));
 
     }
 
 
     private void showCommune(Player player){
-        String name = PlayerDB.getCommune(player);
+        UUID id = PlayerDB.getCommune(player);
 
-        if(name.equals("")){
+        if(id.equals(Commune.getNullUUID())){
             ChatHelp.sendBadMessage(player, "You are not in a Commune.\nTo find other Communes type /com i <communename>");
             return;
         }
 
-        Commune commune = Commune.loadCommune(name);
+        Commune commune = Commune.loadCommune(id);
         if (commune == null){
-            ChatHelp.sendBadMessage(player, "Couldn't find Commune named " + name);
+            ChatHelp.sendBadMessage(player, "Couldn't find Commune named " + commune.getName());
             return;
         }
         ChatHelp.sendMessage(player, commune.toString());
     }
 
     private void showCommune(Player player, String name){
-        Commune commune = Commune.loadCommune(name);
+        Commune commune = Commune.getCommuneByName(name);
         if (commune == null){
             ChatHelp.sendBadMessage(player, "Couldn't find Commune named " + name);
             return;
@@ -177,13 +217,13 @@ public class CommuneCommand implements CommandExecutor {
 
     private void readyToCreateCommune(Player player, String facName, String description){
         Commune commune = new Commune(player, facName, description);
-        if(PlayerDB.getCommune(player).compareTo("") != 0){
+        if(!PlayerDB.getCommune(player).equals(Commune.getNullUUID())){
             ChatHelp.sendBadMessage(player, "You are already in a Commune.");
             return;
         }
-        if (commune.saveData(facName)) {
+        if (commune.saveData()) {
             // Save in player the faction
-            PlayerDB.addCommune(player, facName);
+            PlayerDB.addCommune(player, commune.getId());
             ChatHelp.sendSuccess(player, "Commune " + facName + " created!");
         } else {
             ChatHelp.sendBadMessage(player, "Commune " + facName + " was not created.\nUnknown Error.");
@@ -194,7 +234,11 @@ public class CommuneCommand implements CommandExecutor {
         StringBuffer buffer = new StringBuffer();
 
         for(int i = num; i < args.length; i++){
-            buffer.append(args[i]);
+            if(i == (args.length - 1)){
+                buffer.append(args[i]);
+            } else {
+                buffer.append(args[i] + " ");
+            }
         }
 
         return buffer.toString();

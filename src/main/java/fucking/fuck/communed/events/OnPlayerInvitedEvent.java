@@ -4,17 +4,19 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
+import java.util.UUID;
+
 public class OnPlayerInvitedEvent extends Event implements Cancellable{
     private static final HandlerList HANDLERS = new HandlerList();
     private final String playerName;
-    private final String communeName;
+    private final UUID communeId;
     private final String inviterName;
     private boolean isCancelled;
 
 
-    public OnPlayerInvitedEvent(String playerName, String communeName, String inviterName){
+    public OnPlayerInvitedEvent(String playerName, UUID communeId, String inviterName){
         this.playerName = playerName;
-        this.communeName = communeName;
+        this.communeId = communeId;
         this.inviterName = inviterName;
     }
 
@@ -43,8 +45,8 @@ public class OnPlayerInvitedEvent extends Event implements Cancellable{
         return this.playerName;
     }
 
-    public String getCommuneName() {
-        return this.communeName;
+    public UUID getCommuneName() {
+        return this.communeId;
     }
 
     public String getInviterName() { return this.inviterName; }
