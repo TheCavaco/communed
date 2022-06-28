@@ -6,8 +6,7 @@ import fucking.fuck.communed.exceptions.CannotRemoveNonMemberException;
 import fucking.fuck.communed.exceptions.NotAllowedException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
+import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -15,8 +14,9 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -28,8 +28,11 @@ public class Commune implements Serializable {
     private ArrayList<UUID> players;
     private String name;
     private String description;
-    private ArrayList<Commune> allies;
-    private ArrayList<Commune> enemies;
+    private ArrayList<UUID> allies;
+    private ArrayList<UUID> enemies;
+    private double xp;
+    private int level;
+    private Set<Chunk> territory;
 
 
     public Commune(Player founder, String name, String description){
@@ -39,6 +42,11 @@ public class Commune implements Serializable {
         this.description = description;
         players = new ArrayList<UUID>();
         addPlayer(founder_uuid);
+        allies = new ArrayList<>();
+        enemies = new ArrayList<>();
+        level = 1;
+        xp = 0;
+        territory = new HashSet<Chunk>();
 
     }
 
@@ -116,12 +124,7 @@ public class Commune implements Serializable {
                 return false;
             }
         }
-
-        if(dir.delete()){
-            return true;
-        } else {
-            return false;
-        }
+        return dir.delete();
     }
 
 
@@ -192,12 +195,80 @@ public class Commune implements Serializable {
     }
 
 
+    public boolean addAlly(UUID ally){
+        if(!allies.contains(ally) && !enemies.contains(ally)){
+            return allies.add(ally);
+        }
+        return false;
+
+    }
+
+    public boolean removeAlly(UUID ally){
+        return allies.remove(ally);
+    }
+
+    public boolean addEnemy(UUID enemy){
+        if(!enemies.contains(enemy) && !allies.contains(enemy)){
+            Commune enemycom = loadCommune(enemy);
+            enemycom.addUnaskedEnemy(this.id);
+            return enemies.add(enemy);
+        }
+        return false;
+    }
+
+    private boolean addUnaskedEnemy(UUID id){
+        return enemies.add(id);
+    }
+
+
+    public boolean removeEnemy(UUID enemy){
+        return enemies.remove(enemy);
+    }
+
+    public boolean isEnemy(UUID enemy){
+        return enemies.contains(enemy);
+    }
+
+    public boolean addChunk(Chunk chunk){
+        return territory.add(chunk);
+    }
+
+    public boolean removeChunk(Chunk chunk){
+        return territory.remove(chunk);
+    }
+
+    public boolean hasChunk(Chunk chunk){
+        return territory.contains(chunk);
+    }
+
+    public void giveXP(double xp){
+        double newval = this.xp + xp;
+
+        if(newval >= 100){
+            this.xp = newval - 100;
+            this.level += 1;
+        } else {
+            this.xp = newval;
+        }
+    }
+
     public String toString(){
         String separator = "==================================================\n";
-        String info = ChatColor.YELLOW + "Faction name: " + ChatColor.GREEN + this.name + "\n" +
+        String info = ChatColor.YELLOW + "Commune name: " + ChatColor.GREEN + this.name + "\n" +
                 ChatColor.YELLOW + "Description: " + ChatColor.GREEN + this.description + "\n" +
-                ChatColor.YELLOW + "Founder: " + ChatColor.GREEN + Bukkit.getOfflinePlayer(founder).getName() + "\n";
+                ChatColor.YELLOW + "Founder: " + ChatColor.GREEN + Bukkit.getOfflinePlayer(founder).getName() + "\n" +
+                ChatColor.YELLOW + "Level: " + ChatColor.GREEN + level + "\n" +
+                ChatColor.YELLOW + "Xp:" + ChatColor.GREEN + xpToString() + "\n";
 
         return separator + info + separator;
+    }
+
+    private String xpToString(){
+        int newval = ((int)xp) / 2;
+        StringBuilder buffer = new StringBuilder();
+        for(double i = 0; i < newval; i++){
+            buffer.append("=");
+        }
+        return buffer.toString();
     }
 }
