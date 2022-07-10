@@ -47,4 +47,12 @@ public class ChunkDB {
         return data.get(new NamespacedKey(Communed.getPluginInstance(), "commune"), new UUIDDataType());
     }
 
+    public static boolean hasClaimer(Chunk chunk){
+        PersistentDataContainer data = chunk.getPersistentDataContainer();
+        if(!data.has(new NamespacedKey(Communed.getPluginInstance(), "commune"), new UUIDDataType())){
+            return false;
+        }
+        return !data.get(new NamespacedKey(Communed.getPluginInstance(), "commune"), new UUIDDataType()).equals(Commune.getNullUUID());
+    }
+
 }

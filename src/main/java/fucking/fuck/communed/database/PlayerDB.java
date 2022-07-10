@@ -3,7 +3,10 @@ package fucking.fuck.communed.database;
 
 import fucking.fuck.communed.Communed;
 import fucking.fuck.communed.datatypes.UUIDDataType;
+import fucking.fuck.communed.exceptions.NoRelationException;
+import fucking.fuck.communed.exceptions.SamePlayerException;
 import fucking.fuck.communed.gameobjects.Commune;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -148,6 +151,57 @@ public class PlayerDB {
 
     public static String getInvited(PersistentDataContainer data){
         return data.get(new NamespacedKey(Communed.getPluginInstance(), "invited"), PersistentDataType.STRING);
+    }
+
+    public static String getCommuneName(Player player){
+        if(!hasCommune(player)){
+            return "";
+        }
+        return Commune.loadCommune(getCommune(player)).getName();
+    }
+
+
+    public static void displayCommune(Player player, Commune commune){
+
+        if(hasCommune(player)){
+            UUID id = getCommune(player);
+            if(commune.isEnemy(id)){
+                player.sendTitle(ChatColor.RED + commune.getName(), commune.getDescription(), 10, 50, 20);
+            } else if (commune.isAlly(id)){
+                player.sendTitle(ChatColor.BLUE + commune.getName(), commune.getDescription(), 10, 50, 20);
+            } else if (commune.getId().equals(id)){
+                player.sendTitle(ChatColor.GREEN + commune.getName(), commune.getDescription(), 10, 50, 20);
+            } else {
+                player.sendTitle(commune.getName(), commune.getDescription(), 10, 50, 20);
+            }
+        } else {
+            player.sendTitle(commune.getName(), commune.getDescription(), 10, 50, 20);
+        }
+    }
+
+    //True is ally
+    //false is enemy
+    public static boolean areRelated(Player player, Player otherPlayer) throws NoRelationException, SamePlayerException {
+
+        if(player.getName().equals(otherPlayer.getName())){
+            throw new SamePlayerException("This is the same player");
+        }
+
+        if(!hasCommune(player) || !hasCommune(otherPlayer)){
+            throw new NoRelationException("Has no commune");
+        }
+
+        Commune commune = Commune.loadCommune(getCommune(player));
+        UUID other = getCommune(otherPlayer);
+        if(commune.isAlly(other)){
+            return true;
+        } else if (commune.isEnemy(other)) {
+            return false;
+        } else {
+            throw new NoRelationException("No relation between communes.");
+        }
+
+
     }
 
 }

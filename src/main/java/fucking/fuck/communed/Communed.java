@@ -3,6 +3,7 @@ package fucking.fuck.communed;
 
 import fucking.fuck.communed.commands.CommuneCommand;
 import fucking.fuck.communed.gameobjects.Commune;
+import fucking.fuck.communed.listeners.CommuneListener;
 import fucking.fuck.communed.listeners.InviteListener;
 import fucking.fuck.communed.listeners.PlayerListener;
 import org.bukkit.event.HandlerList;
@@ -42,6 +43,7 @@ public final class Communed extends JavaPlugin {
     private void setUpListeners(){
         listeners.add(new PlayerListener());
         listeners.add(new InviteListener());
+        listeners.add(new CommuneListener());
 
         for(Listener listener: listeners){
             getServer().getPluginManager().registerEvents(listener, this);

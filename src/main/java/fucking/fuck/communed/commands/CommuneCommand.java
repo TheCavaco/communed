@@ -1,12 +1,14 @@
 package fucking.fuck.communed.commands;
 
 
+import fucking.fuck.communed.database.ChunkDB;
 import fucking.fuck.communed.database.PlayerDB;
 import fucking.fuck.communed.events.OnPlayerInvitedEvent;
 import fucking.fuck.communed.gameobjects.Commune;
 import fucking.fuck.communed.helpers.ChatHelp;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -98,12 +100,19 @@ public class CommuneCommand implements CommandExecutor {
                 }
                 break;
             case "set":
-                if(!PlayerDB.isCommuneLeader(player)){
+                if(!(PlayerDB.hasCommune(player) && PlayerDB.isCommuneLeader(player))){
                     ChatHelp.sendNoPermissionMessage(player);
                 } else {
                     ChatHelp.sendBadMessage(player, "Argument needed.\nSpecify what do you want to change.\n" +
                             ChatColor.YELLOW + "/com set description <description>" + ChatColor.RED + "or" + ChatColor.YELLOW +
                             "/com set name <name>");
+                }
+                break;
+            case "claim":
+                if(!(PlayerDB.hasCommune(player) && PlayerDB.isCommuneLeader(player))){
+                    ChatHelp.sendNoPermissionMessage(player);
+                } else {
+                    claimLand(player);
                 }
                 break;
 
@@ -143,6 +152,21 @@ public class CommuneCommand implements CommandExecutor {
         }
     }
 
+
+
+    private void claimLand(Player player){
+        Chunk chunk = player.getLocation().getChunk();
+        UUID id = PlayerDB.getCommune(player);
+        Commune commune = Commune.loadCommune(id);
+        //TODO: Claim pode ser feito em casos de menos power, por fazer
+
+
+        if(ChunkDB.hasClaimer(chunk) || !(commune.addChunk(chunk) && ChunkDB.addClaimer(chunk, id))){
+            ChatHelp.sendBadMessage(player, "This chunk is owned.");
+            return;
+        }
+        ChatHelp.sendSuccess(player, "Your commune now owns this chunk.");
+    }
 
     private void setCommand(Player player, String[] args){
         Commune commune = Commune.loadCommune(PlayerDB.getCommune(player));

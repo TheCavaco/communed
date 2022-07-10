@@ -179,6 +179,7 @@ public class Commune implements Serializable {
         this.description = description;
     }
     public void setName(String name){
+
         this.name = name;
     }
 
@@ -194,6 +195,7 @@ public class Commune implements Serializable {
         return this.founder;
     }
 
+    public String getDescription() { return this.description; }
 
     public boolean addAlly(UUID ally){
         if(!allies.contains(ally) && !enemies.contains(ally)){
@@ -206,6 +208,8 @@ public class Commune implements Serializable {
     public boolean removeAlly(UUID ally){
         return allies.remove(ally);
     }
+
+    public boolean isAlly(UUID ally) { return allies.contains(ally); }
 
     public boolean addEnemy(UUID enemy){
         if(!enemies.contains(enemy) && !allies.contains(enemy)){
@@ -220,6 +224,13 @@ public class Commune implements Serializable {
         return enemies.add(id);
     }
 
+    private void changeDisplays(String name){
+        for(UUID id: players){
+            Player player = Bukkit.getOfflinePlayer(id).getPlayer();
+            String normal_name = player.getName();
+            player.setDisplayName("<" + ChatColor.GREEN + name + ">" + "");
+        }
+    }
 
     public boolean removeEnemy(UUID enemy){
         return enemies.remove(enemy);
@@ -242,13 +253,13 @@ public class Commune implements Serializable {
     }
 
     public void giveXP(double xp){
-        double newval = this.xp + xp;
+        double value = this.xp + xp;
 
-        if(newval >= 100){
-            this.xp = newval - 100;
+        if(value >= 100){
+            this.xp = value - 100;
             this.level += 1;
         } else {
-            this.xp = newval;
+            this.xp = value;
         }
     }
 
