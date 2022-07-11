@@ -115,14 +115,14 @@ public class PlayerDB {
         NamespacedKey key = new NamespacedKey(Communed.getPluginInstance(), "invited");
         PersistentDataType type = PersistentDataType.STRING;
 
-        return data.has(key, type) && data.get(key, type) != "";
+        return data.has(key, type) && !data.get(key, type).equals("");
     }
 
     public static boolean isInvited(PersistentDataContainer data){
         NamespacedKey key = new NamespacedKey(Communed.getPluginInstance(), "invited");
         PersistentDataType type = PersistentDataType.STRING;
 
-        return data.has(key, type) && data.get(key, type) != "";
+        return data.has(key, type) && !data.get(key, type).equals("");
     }
 
 
@@ -187,16 +187,20 @@ public class PlayerDB {
             throw new SamePlayerException("This is the same player");
         }
 
+
+
         if(!hasCommune(player) || !hasCommune(otherPlayer)){
             throw new NoRelationException("Has no commune");
         }
-
-        Commune commune = Commune.loadCommune(getCommune(player));
+        UUID uid = getCommune(player);
+        Commune commune = Commune.loadCommune(uid);
         UUID other = getCommune(otherPlayer);
         if(commune.isAlly(other)){
             return true;
         } else if (commune.isEnemy(other)) {
             return false;
+        } else if (uid.equals(other)){
+            throw new SamePlayerException("Same commune");
         } else {
             throw new NoRelationException("No relation between communes.");
         }

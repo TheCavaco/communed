@@ -29,10 +29,14 @@ public class ChatHelp {
     }
 
     public static void sendAllyMessage(Player player, String communeName, String playerName, String message, String rolename){
-        player.sendMessage(ChatColor.WHITE + "<" + ChatColor.GREEN + rolename + ">" + "<" + ChatColor.GREEN + communeName + ChatColor.WHITE + ">" + playerName + ": " + message);
+        player.sendMessage(ChatColor.WHITE + "<" + ChatColor.DARK_BLUE + rolename + ">" + "<" + ChatColor.BLUE + communeName + ChatColor.WHITE + ">" + playerName + ": " + message);
     }
 
     public static void sendEnemyMessage(Player player, String communeName, String playerName, String message){
         player.sendMessage(ChatColor.WHITE + "<" + ChatColor.RED + communeName + ChatColor.WHITE + ">" + playerName + ": " + message);
+    }
+
+    public static void sendCommuneMessage(Player player, String communeName, String playerName, String message, String rolename){
+        player.sendMessage(ChatColor.WHITE + "<" + ChatColor.GREEN + rolename + ">" + "<" + ChatColor.GREEN + communeName + ChatColor.WHITE + ">" + playerName + ": " + message);
     }
 }

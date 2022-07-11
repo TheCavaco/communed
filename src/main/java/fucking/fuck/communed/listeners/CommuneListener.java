@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class CommuneListener implements Listener {
 
-
+    @EventHandler
     public void onMovingChunks(PlayerMoveEvent event){
         Chunk first = event.getFrom().getChunk();
         Chunk last = event.getTo().getChunk();
@@ -23,10 +23,9 @@ public class CommuneListener implements Listener {
 
         if(!claimer_first.equals(claimer_last) && !claimer_last.equals(Commune.getNullUUID())){
             PlayerDB.displayCommune(event.getPlayer(), Commune.loadCommune(claimer_last));
-        } else if (claimer_last.equals(Commune.getNullUUID())){
-            //TODO: wilderness needs a screen
+        } else if (!claimer_first.equals(claimer_last) && claimer_last.equals(Commune.getNullUUID())){
             Player player = event.getPlayer();
-            player.sendTitle(ChatColor.RED + "FREE GROUND", "No mans land", 10, 50, 20);
+            player.sendTitle(ChatColor.YELLOW + "FREE GROUND", "No mans land", 10, 50, 20);
         }
     }
 }

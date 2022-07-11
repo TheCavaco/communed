@@ -68,7 +68,12 @@ public class CommuneCommand implements CommandExecutor {
                 break;
             case "inv":
                 //check permissions
-                ChatHelp.sendHelp(player, "You need to specify a player name to invite\nUse /com inv <playername>");
+                if(!PlayerDB.isCommuneLeader(player)){
+                    ChatHelp.sendNoPermissionMessage(player);
+                }else {
+                    ChatHelp.sendHelp(player, "You need to specify a player name to invite\nUse /com inv <playername>");
+                }
+
                 break;
             case "accept":
                 PersistentDataContainer data = player.getPersistentDataContainer();
@@ -88,7 +93,7 @@ public class CommuneCommand implements CommandExecutor {
                 break;
             case "delete":
                 //check permissions
-                if(!PlayerDB.isCommuneLeader(player)){
+                if(!PlayerDB.hasCommune(player) || !PlayerDB.isCommuneLeader(player)){
                     ChatHelp.sendNoPermissionMessage(player);
                 } else {
                     UUID commune = PlayerDB.getCommune(player);
@@ -115,6 +120,9 @@ public class CommuneCommand implements CommandExecutor {
                     claimLand(player);
                 }
                 break;
+            default:
+                ChatHelp.sendHelp(player, "Not a valid command");
+                break;
 
         }
     }
@@ -136,7 +144,11 @@ public class CommuneCommand implements CommandExecutor {
             showCommune(player, args[1]);
         } else if ("inv".equals(args[0])) {
             //check permissions
-            invite(player, args);
+            if(!PlayerDB.isCommuneLeader(player)){
+                ChatHelp.sendNoPermissionMessage(player);
+            }else {
+                invite(player, args);
+            }
         } else if ("set".equals(args[0])) {
             if(!PlayerDB.isCommuneLeader(player)){
                 ChatHelp.sendNoPermissionMessage(player);

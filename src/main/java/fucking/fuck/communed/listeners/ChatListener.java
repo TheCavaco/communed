@@ -40,7 +40,7 @@ public class ChatListener implements Listener {
             } catch (NoRelationException e) {
                 ChatHelp.sendNormalMessage(receiver, communeName, senderName, message);
             } catch (SamePlayerException e){
-
+                ChatHelp.sendCommuneMessage(receiver, communeName, senderName, message, "Role");
             }
         }
 

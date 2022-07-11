@@ -103,7 +103,8 @@ public class Commune implements Serializable {
         File dir = new File("./plugins/PluginMetrics/communes");
 
         for(File file: dir.listFiles()){
-            String uid = file.getName().split(".")[0];
+            //TODO error testing
+            String uid = file.getName();
             Commune commune = loadCommune(UUID.fromString(uid));
             if(commune.getName().equals(name)){
                 return commune;
